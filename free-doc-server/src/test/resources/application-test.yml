@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+# 禁用数据库自动配置用于 WebMvcTest
+spring.autoconfigure.exclude:
+  - com.freedoc.config.DynamicDataSourceConfig
+  - com.freedoc.config.MyBatisPlusDialectConfig
+  - com.freedoc.config.DatabaseTypeDetector

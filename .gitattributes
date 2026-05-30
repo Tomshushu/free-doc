@@ -1,0 +1,35 @@
+* text=auto
+
+# Shell scripts must always be LF
+*.sh text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Config files
+*.conf text eol=lf
+*.properties text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# JavaScript/TypeScript/HTML/CSS - can use native
+*.js text
+*.ts text
+*.vue text
+*.html text
+*.css text
+
+# Java
+*.java text
+*.xml text
+
+# SQL
+*.sql text
+
+# Markdown
+*.md text
+
+# Git files
+.gitattributes text eol=lf
+.gitignore text eol=lf

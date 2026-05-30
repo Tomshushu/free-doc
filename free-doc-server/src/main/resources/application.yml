@@ -1,0 +1,94 @@
+server:
+  port: ${SERVER_PORT:9200}
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,image/svg+xml
+    min-response-size: 1024
+
+spring:
+  application:
+    name: free-doc-server
+
+  # 数据源配置由 DynamicDataSourceConfig 动态管理
+  # 根据环境变量自动选择 SQLite 或 MySQL
+
+  servlet:
+    multipart:
+      max-file-size: ${UPLOAD_MAX_SIZE:52428800}
+      max-request-size: ${UPLOAD_MAX_SIZE:52428800}
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.freedoc.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+logging:
+  level:
+    com.freedoc.service.converter: DEBUG
+
+jwt:
+  secret: ${JWT_SECRET:}
+  expiration: 86400000
+  header: Authorization
+  prefix: "Bearer "
+
+upload:
+  path: ${UPLOAD_PATH:./uploads}
+  max-size: ${UPLOAD_MAX_SIZE:52428800}
+
+# 导出功能配置
+freedoc:
+  export:
+    # 文件大小限制
+    max-single-file-size: 52428800  # 50MB
+    max-batch-export-size: 104857600  # 100MB
+    max-batch-files: 1000
+    max-directory-depth: 10
+    
+    # 导出任务配置
+    export-timeout-seconds: 300  # 5分钟
+    thread-pool-size: 5
+    
+    # 缓存配置
+    cache-enabled: true
+    cache-expire-minutes: 30
+    
+    # 异步处理
+    async-enabled: true
+    
+    # PDF导出配置
+    pdf:
+      page-size: A4
+      margin-top: 20
+      margin-bottom: 20
+      margin-left: 20
+      margin-right: 20
+      font-family: SimSun
+      font-size: 12
+      include-header: false
+      include-footer: true
+    
+    # HTML导出配置
+    html:
+      css-path: classpath:static/css/export.css
+      inline-css: true
+      syntax-highlight: true
+      code-theme: github
+    
+    # DOCX导出配置
+    docx:
+      font-family: SimSun
+      font-size: 12
+      margin-top: 1440  # 1英寸
+      margin-bottom: 1440
+      margin-left: 1440
+      margin-right: 1440
+      include-table-of-contents: false

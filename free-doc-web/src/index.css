@@ -1,0 +1,410 @@
+@import './styles/markdown-content.scss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 210 100% 56%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-tertiary: #6b7280;
+    --border-color: #e5e7eb;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-family-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#app {
+  height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+:root {
+  --font-size-base: 14px;
+  --font-size-sm: 12px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 22px;
+
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.font-size-small {
+  --font-size-base: 13px;
+  --font-size-sm: 11px;
+  --font-size-lg: 15px;
+  --font-size-xl: 17px;
+  --font-size-2xl: 20px;
+}
+
+.font-size-medium {
+  --font-size-base: 14px;
+  --font-size-sm: 12px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 22px;
+}
+
+.font-size-large {
+  --font-size-base: 16px;
+  --font-size-sm: 14px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+}
+
+.font-family-system {
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.font-family-serif {
+  --font-family-base: "Times New Roman", "宋体", serif;
+}
+
+.font-family-kai {
+  --font-family-base: "楷体", "KaiTi", "STKaiti", serif;
+}
+
+.font-family-hei {
+  --font-family-base: "黑体", "SimHei", "Microsoft YaHei", sans-serif;
+}
+
+.font-family-song {
+  --font-family-base: "宋体", "SimSun", "NSimSun", serif;
+}
+
+body, .el-button, .el-input, .el-select, .el-dropdown-menu {
+  font-size: var(--font-size-base) !important;
+  font-family: var(--font-family-base) !important;
+}
+
+.text-sm, .el-button--small {
+  font-size: var(--font-size-sm) !important;
+}
+
+.text-lg {
+  font-size: var(--font-size-lg) !important;
+}
+
+.text-xl {
+  font-size: var(--font-size-xl) !important;
+}
+
+.text-2xl {
+  font-size: var(--font-size-2xl) !important;
+}
+
+.el-table, .el-table td, .el-table th {
+  font-size: var(--font-size-base) !important;
+}
+
+.el-dialog__title {
+  font-size: var(--font-size-lg) !important;
+}
+
+.el-dialog__body {
+  font-size: var(--font-size-base) !important;
+}
+
+.el-form-item__label {
+  font-size: var(--font-size-base) !important;
+}
+
+.el-tabs__item {
+  font-size: var(--font-size-base) !important;
+}
+
+.el-menu-item, .el-submenu__title {
+  font-size: var(--font-size-base) !important;
+}
+
+.tree-node, .ctx-item {
+  font-size: var(--font-size-sm) !important;
+}
+
+.setting-item h3 {
+  font-size: var(--font-size-lg) !important;
+}
+
+.setting-item p {
+  font-size: var(--font-size-sm) !important;
+}
+
+.doc-view .doc-markdown-content,
+.project-workspace .doc-markdown-content,
+.share-project-view .markdown-wrapper,
+.share-project-view .api-markdown-body,
+.share-doc-view .markdown-wrapper,
+.share-doc-view .api-markdown-body,
+.share-doc-view .doc-markdown-content,
+.markdown-wrapper,
+.api-markdown-body,
+.doc-markdown-content {
+  font-size: var(--font-size-base) !important;
+  font-family: var(--font-family-base) !important;
+}
+
+.markdown-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding: 24px 28px;
+  box-sizing: border-box;
+}
+
+.share-doc-view .markdown-wrapper *,
+.share-doc-view .api-markdown-body *,
+.share-doc-view .doc-markdown-content * {
+  font-size: inherit !important;
+}
+
+.share-doc-view .markdown-wrapper,
+.share-doc-view .api-markdown-body,
+.share-doc-view .doc-markdown-content {
+  font-size: var(--font-size-base) !important;
+  font-family: var(--font-family-base) !important;
+}
+
+.share-doc-view h1 { font-size: calc(var(--font-size-base) * 2) !important; }
+.share-doc-view h2 { font-size: calc(var(--font-size-base) * 1.75) !important; }
+.share-doc-view h3 { font-size: calc(var(--font-size-base) * 1.5) !important; }
+.share-doc-view h4 { font-size: calc(var(--font-size-base) * 1.25) !important; }
+.share-doc-view h5 { font-size: calc(var(--font-size-base) * 1.125) !important; }
+.share-doc-view h6 { font-size: var(--font-size-base) !important; }
+
+.share-doc-view p,
+.share-doc-view li,
+.share-doc-view blockquote,
+.share-doc-view table,
+.share-doc-view td,
+.share-doc-view th {
+  font-size: var(--font-size-base) !important;
+}
+
+.share-doc-view code,
+.share-doc-view pre {
+  font-size: var(--font-size-sm) !important;
+  font-family: 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace !important;
+}
+
+.share-project-view .markdown-wrapper,
+.share-project-view .api-markdown-body,
+.share-project-view .doc-markdown-content {
+  font-size: var(--font-size-base) !important;
+  font-family: var(--font-family-base) !important;
+}
+
+.share-project-view .markdown-wrapper h1 { font-size: calc(var(--font-size-base) * 2) !important; }
+.share-project-view .markdown-wrapper h2 { font-size: calc(var(--font-size-base) * 1.75) !important; }
+.share-project-view .markdown-wrapper h3 { font-size: calc(var(--font-size-base) * 1.5) !important; }
+.share-project-view .markdown-wrapper h4 { font-size: calc(var(--font-size-base) * 1.25) !important; }
+.share-project-view .markdown-wrapper h5 { font-size: calc(var(--font-size-base) * 1.125) !important; }
+.share-project-view .markdown-wrapper h6 { font-size: var(--font-size-base) !important; }
+
+.share-project-view .markdown-wrapper p,
+.share-project-view .markdown-wrapper li,
+.share-project-view .markdown-wrapper blockquote,
+.share-project-view .markdown-wrapper table,
+.share-project-view .markdown-wrapper td,
+.share-project-view .markdown-wrapper th {
+  font-size: var(--font-size-base) !important;
+}
+
+.share-project-view .markdown-wrapper code,
+.share-project-view .markdown-wrapper pre {
+  font-size: var(--font-size-sm) !important;
+  font-family: 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace !important;
+}
+
+.doc-view .doc-markdown-content h1,
+.project-workspace .doc-markdown-content h1,
+.share-project-view .markdown-wrapper h1,
+.share-doc-view .markdown-wrapper h1,
+.share-doc-view .api-markdown-body h1,
+.share-doc-view .doc-markdown-content h1,
+.markdown-wrapper h1,
+.api-markdown-body h1,
+.doc-markdown-content h1 {
+  font-size: calc(var(--font-size-base) * 2) !important;
+}
+
+.doc-view .doc-markdown-content h2,
+.project-workspace .doc-markdown-content h2,
+.share-project-view .markdown-wrapper h2,
+.share-doc-view .markdown-wrapper h2,
+.share-doc-view .api-markdown-body h2,
+.share-doc-view .doc-markdown-content h2,
+.markdown-wrapper h2,
+.api-markdown-body h2,
+.doc-markdown-content h2 {
+  font-size: calc(var(--font-size-base) * 1.75) !important;
+}
+
+.doc-view .doc-markdown-content h3,
+.project-workspace .doc-markdown-content h3,
+.share-project-view .markdown-wrapper h3,
+.share-doc-view .markdown-wrapper h3,
+.share-doc-view .api-markdown-body h3,
+.share-doc-view .doc-markdown-content h3,
+.markdown-wrapper h3,
+.api-markdown-body h3,
+.doc-markdown-content h3 {
+  font-size: calc(var(--font-size-base) * 1.5) !important;
+}
+
+.doc-view .doc-markdown-content h4,
+.project-workspace .doc-markdown-content h4,
+.share-project-view .markdown-wrapper h4,
+.share-doc-view .markdown-wrapper h4,
+.share-doc-view .api-markdown-body h4,
+.share-doc-view .doc-markdown-content h4,
+.markdown-wrapper h4,
+.api-markdown-body h4,
+.doc-markdown-content h4 {
+  font-size: calc(var(--font-size-base) * 1.25) !important;
+}
+
+.doc-view .doc-markdown-content h5,
+.project-workspace .doc-markdown-content h5,
+.share-project-view .markdown-wrapper h5,
+.share-doc-view .markdown-wrapper h5,
+.share-doc-view .api-markdown-body h5,
+.share-doc-view .doc-markdown-content h5,
+.markdown-wrapper h5,
+.api-markdown-body h5,
+.doc-markdown-content h5 {
+  font-size: calc(var(--font-size-base) * 1.125) !important;
+}
+
+.doc-view .doc-markdown-content h6,
+.project-workspace .doc-markdown-content h6,
+.share-project-view .markdown-wrapper h6,
+.share-doc-view .markdown-wrapper h6,
+.share-doc-view .api-markdown-body h6,
+.share-doc-view .doc-markdown-content h6,
+.markdown-wrapper h6,
+.api-markdown-body h6,
+.doc-markdown-content h6 {
+  font-size: var(--font-size-base) !important;
+}
+
+.doc-view .doc-markdown-content p,
+.project-workspace .doc-markdown-content p,
+.share-project-view .markdown-wrapper p,
+.share-doc-view .markdown-wrapper p,
+.share-doc-view .api-markdown-body p,
+.share-doc-view .doc-markdown-content p,
+.markdown-wrapper p,
+.api-markdown-body p,
+.doc-markdown-content p,
+.doc-view .doc-markdown-content li,
+.project-workspace .doc-markdown-content li,
+.share-project-view .markdown-wrapper li,
+.share-doc-view .markdown-wrapper li,
+.share-doc-view .api-markdown-body li,
+.share-doc-view .doc-markdown-content li,
+.markdown-wrapper li,
+.api-markdown-body li,
+.doc-markdown-content li {
+  font-size: var(--font-size-base) !important;
+}
+
+.doc-view .doc-markdown-content code,
+.project-workspace .doc-markdown-content code,
+.share-project-view .markdown-wrapper code,
+.share-doc-view .markdown-wrapper code,
+.markdown-wrapper code,
+.doc-view .doc-markdown-content pre,
+.project-workspace .doc-markdown-content pre,
+.share-project-view .markdown-wrapper pre,
+.share-doc-view .markdown-wrapper pre,
+.markdown-wrapper pre {
+  font-size: var(--font-size-sm) !important;
+}
+
+.doc-view .doc-markdown-content table,
+.project-workspace .doc-markdown-content table,
+.share-project-view .markdown-wrapper table,
+.share-doc-view .markdown-wrapper table,
+.markdown-wrapper table {
+  font-size: var(--font-size-base) !important;
+}
+
+.doc-view .doc-markdown-content blockquote,
+.project-workspace .doc-markdown-content blockquote,
+.share-project-view .markdown-wrapper blockquote,
+.share-doc-view .markdown-wrapper blockquote,
+.markdown-wrapper blockquote {
+  font-size: var(--font-size-base) !important;
+}
+
+.command-palette-container {
+  animation: paletteSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes paletteSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

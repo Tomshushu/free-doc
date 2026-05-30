@@ -1,0 +1,126 @@
+.doc-view .doc-markdown-content,
+.project-workspace .doc-markdown-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.doc-view .doc-markdown-content table,
+.project-workspace .doc-markdown-content table {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: table !important;
+  border-collapse: collapse;
+  box-sizing: border-box;
+  table-layout: fixed;
+}
+
+.doc-view .doc-markdown-content th,
+.doc-view .doc-markdown-content td,
+.project-workspace .doc-markdown-content th,
+.project-workspace .doc-markdown-content td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.doc-view .doc-markdown-content pre,
+.project-workspace .doc-markdown-content pre {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.doc-view .doc-markdown-content pre code,
+.project-workspace .doc-markdown-content pre code {
+  display: block;
+  min-width: max-content;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.doc-view .doc-markdown-content code:not(pre code),
+.project-workspace .doc-markdown-content code:not(pre code) {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.doc-view .doc-markdown-content mark,
+.project-workspace .doc-markdown-content mark,
+.share-project-view .doc-markdown-content mark,
+.share-doc-view .doc-markdown-content mark {
+  background-color: #fef08a;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.doc-view .doc-markdown-content sup,
+.project-workspace .doc-markdown-content sup,
+.share-project-view .doc-markdown-content sup,
+.share-doc-view .doc-markdown-content sup {
+  font-size: 0.75em;
+  vertical-align: super;
+  line-height: 0;
+}
+
+.doc-view .doc-markdown-content sub,
+.project-workspace .doc-markdown-content sub,
+.share-project-view .doc-markdown-content sub,
+.share-doc-view .doc-markdown-content sub {
+  font-size: 0.75em;
+  vertical-align: sub;
+  line-height: 0;
+}
+
+.doc-view .doc-markdown-content input[type="checkbox"],
+.project-workspace .doc-markdown-content input[type="checkbox"],
+.share-project-view .doc-markdown-content input[type="checkbox"],
+.share-doc-view .doc-markdown-content input[type="checkbox"] {
+  margin-right: 6px;
+  vertical-align: middle;
+  accent-color: #3b82f6;
+  transform: scale(1.15);
+  cursor: default;
+}
+
+.doc-view .doc-markdown-content del,
+.doc-view .doc-markdown-content s,
+.project-workspace .doc-markdown-content del,
+.project-workspace .doc-markdown-content s,
+.share-project-view .doc-markdown-content del,
+.share-project-view .doc-markdown-content s,
+.share-doc-view .doc-markdown-content del,
+.share-doc-view .doc-markdown-content s {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+.doc-view .doc-markdown-content dl,
+.project-workspace .doc-markdown-content dl,
+.share-project-view .doc-markdown-content dl,
+.share-doc-view .doc-markdown-content dl {
+  margin: 16px 0;
+  padding: 0;
+}
+
+.doc-view .doc-markdown-content dt,
+.project-workspace .doc-markdown-content dt,
+.share-project-view .doc-markdown-content dt,
+.share-doc-view .doc-markdown-content dt {
+  font-weight: 600;
+  margin-top: 12px;
+  color: #1f2937;
+}
+
+.doc-view .doc-markdown-content dd,
+.project-workspace .doc-markdown-content dd,
+.share-project-view .doc-markdown-content dd,
+.share-doc-view .doc-markdown-content dd {
+  margin: 4px 0 4px 0;
+  padding-left: 24px;
+  color: #4b5563;
+}

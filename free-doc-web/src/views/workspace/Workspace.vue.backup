@@ -1,0 +1,928 @@
+<template>
+  <div class="workspace-page h-screen flex overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <ResizableSplit class="flex-1 w-full" :initial-width="280" :min-width="240" :max-width="400">
+      <template #left>
+        <div class="h-full bg-white/80 backdrop-blur-lg border-r border-gray-200 flex flex-col">
+          <!-- 团队设置标题栏 -->
+          <div class="p-5 pb-3 flex items-center justify-between mx-1 mt-1">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-gear text-gray-600"></i>
+              <span class="text-sm font-medium text-gray-700">团队设置</span>
+            </div>
+            <el-dropdown trigger="click" @command="handleTeamSettingCommand">
+              <button class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-ellipsis text-sm"></i>
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu class="!rounded-xl !p-1 !min-w-[140px]">
+                  <el-dropdown-item command="edit" class="!rounded-lg !px-3 !py-2.5 !m-0">
+                    <div class="flex items-center gap-2.5">
+                      <i class="fa-solid fa-pen text-gray-500 text-sm w-4"></i>
+                      <span>编辑团队</span>
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="delete" class="!rounded-lg !px-3 !py-2.5 !m-0 !text-red-500 hover:!bg-red-50">
+                    <div class="flex items-center gap-2.5">
+                      <i class="fa-solid fa-trash-can text-sm w-4"></i>
+                      <span>删除团队</span>
+                    </div>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+
+          <!-- 团队信息卡片 -->
+          <div class="px-5 pt-4 pb-5 border-b border-gray-100">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg mb-3">
+                <i class="fa-solid fa-users text-white text-xl"></i>
+              </div>
+              <h3 class="text-lg font-bold text-gray-900">{{ teamStats?.teamName || '团队' }}</h3>
+              <p class="text-xs text-gray-400 mt-0.5">
+                创建者: {{ teamStats?.createUserName || teamStats?.createUser || '-' }}
+              </p>
+              <p class="text-xs text-gray-400 mt-0.5">
+                {{ formatDate(teamStats?.createTime) }}
+              </p>
+              <!-- 团队统计信息 -->
+              <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                <span class="flex items-center gap-1">
+                  <i class="fa-solid fa-folder text-indigo-500"></i>
+                  {{ teamStats?.projectCount || 0 }}项目
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="fa-solid fa-users text-blue-500"></i>
+                  {{ teamStats?.memberCount || 0 }}成员
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="fa-solid fa-file-lines text-blue-400"></i>
+                  {{ teamStats?.docCount || 0 }}文档
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 团队成员列表 -->
+          <div class="flex-1 overflow-y-auto px-4 py-4">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-semibold text-gray-800">团队成员</h4>
+              <div class="flex items-center gap-1">
+                <button class="text-xs text-gray-500 hover:text-primary px-2 py-1 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-1"
+                        @click="showMemberDialog = true; activeProject = null; loadTeamMembersList()">
+                  <i class="fa-solid fa-user-plus text-[11px]"></i>邀请
+                </button>
+                <span class="text-gray-200">|</span>
+                <button class="text-xs text-gray-500 hover:text-primary px-2 py-1 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-1"
+                        @click="showCreateUserDialog = true; resetUserForm()">
+                  <i class="fa-solid fa-plus text-[11px]"></i>新建
+                </button>
+              </div>
+            </div>
+
+            <!-- 成员列表 -->
+            <div v-if="teamMembers.length > 0" class="space-y-1">
+              <div
+                v-for="member in teamMembers"
+                :key="member.userId"
+                class="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
+              >
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">
+                  {{ (member.userName || '').charAt(0) || 'U' }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-700 truncate">{{ member.userName }}</p>
+                  <span :class="[
+                    'inline-block text-[10px] leading-none px-1.5 py-0.5 rounded',
+                    member.type === 'OWNER'
+                      ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                      : 'bg-blue-50 text-blue-600 border border-blue-200'
+                  ]">{{ member.type === 'OWNER' ? '管理者' : '参与者' }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="py-6 text-center text-xs text-gray-400">
+              暂无团队成员
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #right>
+        <div class="h-full overflow-y-auto p-8">
+      <!-- 团队选择器 + 操作栏 -->
+      <div class="max-w-[1200px] mx-auto mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <!-- 团队下拉选择 -->
+            <el-select
+              v-model="currentTeamId"
+              placeholder="选择团队"
+              class="!w-36"
+              size="default"
+              @change="handleSwitchTeam"
+            >
+              <el-option
+                v-for="team in allTeams"
+                :key="team.teamId"
+                :label="team.teamName"
+                :value="team.teamId"
+              />
+            </el-select>
+          </div>
+          <div class="flex items-center gap-1">
+            <button class="text-sm text-gray-600 hover:text-primary px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 font-medium"
+                    @click="showCreateTeamDialog = true">
+              <i class="fa-solid fa-plus text-xs"></i>新建团队
+            </button>
+            <el-dropdown trigger="click" @command="handleTopAction">
+              <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700 relative">
+                <i class="fa-solid fa-moon text-sm"></i>
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="theme">切换主题</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700 relative">
+              <i class="fa-solid fa-bell text-sm"></i>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 团队项目区域 -->
+      <div class="max-w-[1200px] mx-auto">
+        <!-- 标题行 -->
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">团队项目</h2>
+            <p class="text-sm text-gray-400 mt-0.5">管理和查看团队的所有项目</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-orange-500 font-medium">{{ projects.length }}个 项目</span>
+            <button class="text-sm text-primary hover:text-primary/80 px-4 py-1.5 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors flex items-center gap-1.5 font-medium"
+                    @click="showCreateProjectDialog = true">
+              <i class="fa-solid fa-plus text-xs"></i>新建项目
+            </button>
+          </div>
+        </div>
+
+        <!-- 项目卡片网格 -->
+        <div v-if="projects.length > 0" class="grid grid-cols-3 gap-5">
+          <div
+            v-for="proj in projects"
+            :key="proj.projectId"
+            class="project-card bg-white rounded-xl border border-yellow-100/80 hover:border-yellow-300 hover:shadow-lg transition-all duration-200 group relative p-5"
+            @click="selectProject(proj)"
+          >
+            <!-- 右上角操作菜单 -->
+            <div class="absolute top-4 right-3 z-10" @click.stop>
+              <el-dropdown trigger="click" @command="(cmd: string) => handleProjectAction(cmd, proj)">
+                <button class="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors" @click.stop>
+                  <i class="fa-solid fa-ellipsis text-gray-500 text-sm"></i>
+                </button>
+              <template #dropdown>
+                <el-dropdown-menu class="!rounded-xl !p-1 !min-w-[140px]">
+                  <el-dropdown-item command="members" class="!rounded-lg !px-3 !py-2.5 !m-0">
+                    <div class="flex items-center gap-2.5">
+                      <i class="fa-solid fa-users text-gray-500 text-sm w-4"></i>
+                      <span>项目成员</span>
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="edit" class="!rounded-lg !px-3 !py-2.5 !m-0">
+                    <div class="flex items-center gap-2.5">
+                      <i class="fa-solid fa-pen text-gray-500 text-sm w-4"></i>
+                      <span>编辑</span>
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="delete" divided class="!rounded-lg !px-3 !py-2.5 !m-0 !text-red-500 hover:!bg-red-50">
+                    <div class="flex items-center gap-2.5">
+                      <i class="fa-solid fa-trash-can text-sm w-4"></i>
+                      <span>删除</span>
+                    </div>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            </div>
+
+            <!-- 卡片主体 -->
+            <div class="flex items-start gap-3 mb-3 pr-6">
+              <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm shrink-0">
+                <i :class="[proj.projectIcon || 'fa-solid fa-folder', 'text-white text-sm']"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <h3 class="font-bold text-gray-900 truncate text-[15px]">{{ proj.projectName }}</h3>
+                  <el-tag v-if="isProjectOwner(proj.projectId)" size="small" effect="plain" round class="!text-indigo-600 !border-indigo-200 !bg-indigo-50 !h-5 !text-[10px] shrink-0">
+                    <i class="fa-solid fa-crown mr-0.5 text-[9px]"></i>拥有者
+                  </el-tag>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 line-clamp-2 mb-3 pl-12">{{ proj.projectDesc || '暂无描述' }}</p>
+            <div class="pl-12 flex items-center gap-1 text-[11px] text-gray-400">
+              <span>创建者: {{ proj.createUserName || proj.createUserAccount || '-' }}</span>
+              <span>·</span>
+              <span>{{ formatDate(proj.createTime) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="py-20 text-center">
+          <div class="inline-flex flex-col items-center">
+            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+              <i class="fa-solid fa-folder-open text-3xl text-gray-300"></i>
+            </div>
+            <p class="text-gray-500 font-medium mb-1">暂无项目</p>
+            <p class="text-sm text-gray-400 mb-4">创建第一个项目，开始你的文档协作之旅</p>
+            <button class="text-sm text-primary hover:text-primary/80 px-5 py-2 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors flex items-center gap-1.5 font-medium"
+                    @click="showCreateProjectDialog = true">
+              <i class="fa-solid fa-plus text-xs"></i>新建项目
+            </button>
+          </div>
+        </div>
+      </div>
+
+    <!-- 创建团队弹窗 -->
+    <el-dialog v-model="showCreateTeamDialog" title="创建团队" width="420px" destroy-on-close>
+      <el-form :model="newTeamForm" label-width="80px">
+        <el-form-item label="团队名称" required>
+          <el-input v-model="newTeamForm.teamName" placeholder="请输入团队名称" maxlength="20" show-word-limit />
+        </el-form-item>
+        <el-form-item label="团队描述">
+          <el-input v-model="newTeamForm.teamDesc" type="textarea" :rows="3" placeholder="描述这个团队的用途（可选）" maxlength="200" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showCreateTeamDialog = false">取消</el-button>
+        <el-button type="primary" :disabled="!newTeamForm.teamName.trim()" @click="createTeam">创建</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑团队弹窗 -->
+    <el-dialog v-model="showEditTeamDialog" title="编辑团队" width="420px" destroy-on-close>
+      <el-form :model="editTeamForm" label-width="80px">
+        <el-form-item label="团队名称" required>
+          <el-input v-model="editTeamForm.teamName" placeholder="请输入团队名称" maxlength="20" show-word-limit />
+        </el-form-item>
+        <el-form-item label="团队描述">
+          <el-input v-model="editTeamForm.teamDesc" type="textarea" :rows="3" placeholder="描述这个团队的用途（可选）" maxlength="200" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditTeamDialog = false">取消</el-button>
+        <el-button type="primary" :disabled="!editTeamForm.teamName.trim()" @click="saveEditTeam">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 创建项目弹窗 -->
+    <el-dialog v-model="showCreateProjectDialog" title="创建项目" width="420px" destroy-on-close>
+      <el-form :model="newProject" label-width="80px" @submit.prevent="createProject">
+        <el-form-item label="项目名称" required>
+          <el-input v-model="newProject.projectName" placeholder="请输入项目名称" maxlength="50" show-word-limit />
+        </el-form-item>
+        <el-form-item label="项目描述">
+          <el-input v-model="newProject.projectDesc" type="textarea" :rows="3" placeholder="请输入项目描述（可选）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showCreateProjectDialog = false">取消</el-button>
+        <el-button type="primary" :disabled="!newProject.projectName.trim()" @click="createProject">创建</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 项目成员弹窗（复用于团队成员管理） -->
+    <el-dialog v-model="showMemberDialog" :title="activeProject ? `项目成员 - ${activeProject.projectName}` : '团队成员'" width="640px" destroy-on-close>
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-sm text-gray-500">成员列表 ({{ activeProjectMembers.length }})</span>
+        <button class="text-xs text-primary hover:text-primary/80 px-3 py-1.5 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors flex items-center gap-1 font-medium"
+                @click="openAddMember">
+          <i class="fa-solid fa-plus text-[10px]"></i>添加成员
+        </button>
+      </div>
+
+      <!-- 成员表格 -->
+      <el-table :data="activeProjectMembers" size="default" v-loading="memberDialogLoading">
+        <el-table-column label="#" width="50">
+          <template #default="{ $index }">
+            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">{{ $index + 1 }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="用户名" min-width="140">
+          <template #default="{ row }">
+            <span>{{ row.userName || row.name || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="userId" label="用户ID" min-width="160">
+          <template #default="{ row }">
+            <span class="text-gray-400 text-xs font-mono">{{ row.userId }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="type" label="角色" width="110">
+          <template #default="{ row }">
+            <el-tag
+              :type="row.type === 'OWNER' ? 'warning' : 'success'"
+              effect="plain"
+              round
+              size="small"
+            >
+              {{ row.type === 'OWNER' ? '拥有者' : '参与者' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="权限" width="100">
+          <template #default="{ row }">
+            <el-select :model-value="row.permission || (row.type === 'OWNER' ? 'rw' : 'r')" size="small" disabled class="!w-full">
+              <el-option label="只读" value="r" />
+              <el-option label="读写" value="rw" />
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="70" align="center">
+          <template #default="{ row }">
+            <el-button text type="danger" size="small" :disabled="row.type === 'OWNER'" @click="handleRemoveMember(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 添加成员表单（内联在弹窗底部） -->
+      <div v-if="showAddMemberForm" class="mt-5 pt-4 border-t border-gray-100">
+        <p class="text-sm font-medium text-gray-700 mb-3">添加新成员</p>
+
+        <!-- 搜索用户 -->
+        <div class="mb-3">
+          <el-select
+            v-model="addMemberForm.userId"
+            filterable
+            remote
+            reserve-keyword
+            :remote-method="searchSystemUsers"
+            placeholder="搜索用户名或账号..."
+            class="!w-full"
+            size="default"
+          >
+            <el-option
+              v-for="u in searchUserResults"
+              :key="u.userId"
+              :label="`${u.userName}${u.account ? '（' + u.account + '）' : ''}`"
+              :value="u.userId"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-gray-700">{{ u.userName }}</span>
+                <span class="text-xs text-gray-400">{{ u.account }}</span>
+              </div>
+            </el-option>
+          </el-select>
+        </div>
+
+        <!-- 选中用户信息 + 角色/权限 -->
+        <div class="flex items-end gap-3 bg-gray-50 rounded-lg p-3" v-if="selectedAddUser">
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800">已选择：{{ selectedAddUser.userName }} ({{ selectedAddUser.account || '' }})</p>
+          </div>
+          <el-form-item label="角色" class="!mb-0 !mr-0">
+            <el-select v-model="addMemberForm.type" style="width: 130px">
+              <el-option label="管理员(OWNER)" value="OWNER" />
+              <el-option label="参与者(PARTICIPANT)" value="PARTICIPANT" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="权限" class="!mb-0 !mr-0">
+            <el-select v-model="addMemberForm.permission" style="width: 90px">
+              <el-option label="读写" value="rw" />
+              <el-option label="只读" value="r" />
+            </el-select>
+          </el-form-item>
+        </div>
+
+        <div class="mt-3 flex justify-end gap-2">
+          <el-button type="primary" :disabled="!addMemberForm.userId" @click="submitAddMember">确认添加</el-button>
+          <el-button @click="cancelAddMember">取消</el-button>
+        </div>
+      </div>
+    </el-dialog>
+
+    <!-- 编辑项目弹窗 -->
+    <el-dialog v-model="showEditProjectDialog" title="编辑项目" width="480px" destroy-on-close>
+      <el-form :model="editProjectForm" label-width="80px">
+        <el-form-item label="项目名称" required>
+          <el-input v-model="editProjectForm.name" placeholder="请输入项目名称" maxlength="50" show-word-limit />
+        </el-form-item>
+        <el-form-item label="项目描述">
+          <el-input v-model="editProjectForm.desc" type="textarea" :rows="3" placeholder="请输入项目描述（可选）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditProjectDialog = false">取消</el-button>
+        <el-button type="primary" :disabled="!editProjectForm.name.trim()" @click="saveEditProject">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 新建用户弹窗 -->
+    <el-dialog v-model="showCreateUserDialog" title="新建用户" width="460px" destroy-on-close>
+      <el-form :model="userForm" label-width="80px">
+        <el-form-item label="账号" required>
+          <el-input v-model="userForm.account" placeholder="请输入登录账号" maxlength="30" />
+        </el-form-item>
+        <el-form-item label="密码" required>
+          <el-input v-model="userForm.password" type="password" placeholder="请输入密码" show-password maxlength="32" />
+        </el-form-item>
+        <el-form-item label="用户名">
+          <el-input v-model="userForm.userName" placeholder="请输入显示名称（可选）" maxlength="20" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-radio-group v-model="userForm.role">
+            <el-radio value="PARTICIPANT">普通成员</el-radio>
+            <el-radio value="OWNER">管理员</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showCreateUserDialog = false">取消</el-button>
+        <el-button type="primary" :disabled="!userForm.account.trim() || !userForm.password.trim()" @click="submitCreateUser">创建</el-button>
+      </template>
+    </el-dialog>
+        </div>
+      </template>
+    </ResizableSplit>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/stores/user'
+import { useAppStore } from '@/stores/app'
+import ResizableSplit from '@/components/ResizableSplit.vue'
+import { getUserTeams, getTeamMembers, getTeamStats, createTeam as createTeamApi, updateTeam as updateTeamApi, deleteTeam as deleteTeamApi, addTeamMember, type TeamMemberVO, type TeamStatsVO } from '@/api/team'
+import { getTeamProjects, createProject as createProjectApi, deleteProject as deleteProjectApi, updateProject as updateProjectApi, addProjectMember, removeProjectMember, getProjectMembers, type ProjectVO, type ProjectMemberVO } from '@/api/project'
+import { searchUsers } from '@/api/user'
+import { register as registerApi } from '@/api/auth'
+import type { Team } from '@/types'
+
+const router = useRouter()
+const userStore = useUserStore()
+const appStore = useAppStore()
+
+// ===== 数据 =====
+const allTeams = ref<Team[]>([])
+const currentTeamId = ref<string>('')
+const projects = ref<ProjectVO[]>([])
+const teamMembers = ref<TeamMemberVO[]>([])
+const teamStats = ref<TeamStatsVO | null>(null)
+
+// 弹窗状态
+const showCreateTeamDialog = ref(false)
+const showEditTeamDialog = ref(false)
+const showCreateProjectDialog = ref(false)
+const showMemberDialog = ref(false)
+const showEditProjectDialog = ref(false)
+const newTeamForm = ref({ teamName: '', teamDesc: '' })
+const editTeamForm = ref({ teamId: '', teamName: '', teamDesc: '' })
+const newProject = ref({ projectName: '', projectDesc: '' })
+const editProjectForm = ref<{ id: string; name: string; desc: string }>({ id: '', name: '', desc: '' })
+
+// 当前操作的项目（用于弹窗）
+const activeProject = ref<ProjectVO | null>(null)
+const activeProjectMembers = ref<ProjectMemberVO[]>([])
+const memberDialogLoading = ref(false)
+
+// 添加成员相关
+const showAddMemberForm = ref(false)
+const addMemberForm = ref({ userId: '', type: 'PARTICIPANT', permission: 'r' })
+const searchUserResults = ref<any[]>([])
+const selectedAddUser = ref<any>(null)
+
+// 新建用户
+const showCreateUserDialog = ref(false)
+const userForm = ref({ account: '', password: '', userName: '', role: 'PARTICIPANT' })
+
+// 计算属性
+const currentTeamUserRole = computed(() => {
+  const myMember = teamMembers.value.find(m => m.userId === userStore.user?.userId)
+  if (!myMember) return ''
+  return myMember.type === 'OWNER' ? '创建者' : '参与者'
+})
+
+const currentTeamProjectsCount = computed(() => projects.value.length)
+
+function isProjectOwner(projectId: string): boolean {
+  const project = projects.value.find(p => p.projectId === projectId)
+  return project?.isOwner ?? false
+}
+
+/** 团队设置下拉菜单命令处理 */
+function handleTeamSettingCommand(cmd: string) {
+  if (cmd === 'edit') {
+    openEditTeamDialog()
+  } else if (cmd === 'delete') {
+    handleDeleteTeam()
+  }
+}
+
+/** 顶部操作栏命令处理 */
+function handleTopAction(cmd: string) {
+  if (cmd === 'theme') {
+    ElMessage.info('主题切换功能开发中...')
+  }
+}
+
+// 打开编辑团队弹窗
+function openEditTeamDialog() {
+  const currentTeam = allTeams.value.find(t => t.teamId === currentTeamId.value)
+  if (currentTeam) {
+    editTeamForm.value = {
+      teamId: currentTeam.teamId,
+      teamName: currentTeam.teamName,
+      teamDesc: currentTeam.teamDesc || ''
+    }
+    showEditTeamDialog.value = true
+  }
+}
+
+// 保存编辑团队
+async function saveEditTeam() {
+  if (!editTeamForm.value.teamName.trim()) return
+  try {
+    await updateTeamApi(editTeamForm.value.teamId, {
+      teamName: editTeamForm.value.teamName.trim(),
+      teamDesc: editTeamForm.value.teamDesc
+    })
+    ElMessage.success('修改成功')
+    showEditTeamDialog.value = false
+    // 刷新团队列表
+    await loadTeams()
+  } catch (e: any) {
+    ElMessage.error(e.message || '修改失败')
+  }
+}
+
+// 删除团队
+async function handleDeleteTeam() {
+  if (!currentTeamId.value) return
+  const currentTeam = allTeams.value.find(t => t.teamId === currentTeamId.value)
+  if (!currentTeam) return
+
+  try {
+    await ElMessageBox.confirm(
+      `确定删除团队「${currentTeam.teamName}」？删除后团队下的所有项目和文档都将被删除，此操作不可恢复！`,
+      '危险操作',
+      {
+        type: 'warning',
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        confirmButtonClass: 'el-button--danger'
+      }
+    )
+
+    await deleteTeamApi(currentTeamId.value)
+    ElMessage.success('团队已删除')
+
+    // 从列表中移除
+    allTeams.value = allTeams.value.filter(t => t.teamId !== currentTeamId.value)
+
+    // 切换到其他团队或清空
+    if (allTeams.value.length > 0) {
+      currentTeamId.value = allTeams.value[0].teamId
+      appStore.setCurrentTeam(allTeams.value[0].teamId)
+      await loadTeamData(currentTeamId.value)
+    } else {
+      currentTeamId.value = ''
+      appStore.setCurrentTeam(null)
+      projects.value = []
+      teamMembers.value = []
+      teamStats.value = null
+    }
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      ElMessage.error(e.message || '删除失败')
+    }
+  }
+}
+
+// 初始化
+onMounted(async () => {
+  await Promise.all([loadTeams()])
+})
+
+async function loadTeams() {
+  try {
+    const teams = await getUserTeams()
+    allTeams.value = teams
+    if (teams.length > 0) {
+      // 如果有当前团队ID则恢复，否则选第一个
+      if (appStore.currentTeamId && teams.some(t => t.teamId === appStore.currentTeamId)) {
+        currentTeamId.value = appStore.currentTeamId!
+      } else {
+        currentTeamId.value = teams[0].teamId
+        appStore.setCurrentTeam(teams[0].teamId)
+      }
+      await loadTeamData(currentTeamId.value)
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function handleSwitchTeam(teamId: string) {
+  if (!teamId) return
+  currentTeamId.value = teamId
+  appStore.setCurrentTeam(teamId)
+  await loadTeamData(teamId)
+}
+
+async function loadTeamData(teamId: string) {
+  try {
+    // 并行加载项目、成员和统计信息
+    const [projectList, members, stats] = await Promise.all([
+      getTeamProjects(teamId),
+      getTeamMembers(teamId),
+      getTeamStats(teamId)
+    ])
+    projects.value = projectList
+    // 后端已返回用户信息，无需再查询
+    teamMembers.value = members
+    teamStats.value = stats
+  } catch (e) {
+    console.error('加载团队数据失败:', e)
+  }
+}
+
+// loadAllProjectMembers 已移除 - 项目列表接口现在直接返回 isOwner 字段
+
+function selectProject(project: ProjectVO) {
+  appStore.setCurrentProject(project.projectId)
+  appStore.setProjectName(project.projectName)
+  router.push(`/workspace/${project.projectId}`)
+}
+
+/** 项目卡片操作菜单 */
+function handleProjectAction(cmd: string, proj: ProjectVO) {
+  if (cmd === 'members') {
+    activeProject.value = proj
+    showMemberDialog.value = true
+    loadProjectMemberList(proj.projectId)
+  } else if (cmd === 'edit') {
+    activeProject.value = proj
+    editProjectForm.value = { id: proj.projectId, name: proj.projectName, desc: proj.projectDesc || '' }
+    showEditProjectDialog.value = true
+  } else if (cmd === 'delete') {
+    ElMessageBox.confirm(
+      `确定删除项目「${proj.projectName}」？删除后不可恢复！`,
+      '危险操作',
+      { type: 'warning', confirmButtonText: '确定删除', cancelButtonText: '取消' }
+    ).then(async () => {
+      try {
+        await deleteProjectApi(proj.projectId)
+        ElMessage.success('项目已删除')
+        projects.value = projects.value.filter(p => p.projectId !== proj.projectId)
+        if (appStore.currentProjectId === proj.projectId) {
+          appStore.setCurrentProject(null)
+          router.push('/')
+        }
+      } catch (e: any) {
+        ElMessage.error(e.message || '删除失败')
+      }
+    }).catch(() => {})
+  }
+}
+
+/** 加载团队成员列表（用于左侧栏+邀请） */
+async function loadTeamMembersList() {
+  if (!currentTeamId.value) return
+  memberDialogLoading.value = true
+  try {
+    const members = await getTeamMembers(currentTeamId.value)
+    // 转换为 ProjectMemberVO 格式以兼容表格显示
+    activeProjectMembers.value = members.map(m => ({
+      ...m,
+      projectId: currentTeamId.value, // 使用 teamId 作为 projectId
+      permission: (m.type === 'OWNER' ? 'rw' : 'r') as 'r' | 'rw'
+    }))
+  } catch (e) {
+    console.error('加载团队成员失败:', e)
+    activeProjectMembers.value = []
+  } finally {
+    memberDialogLoading.value = false
+  }
+}
+
+/** 加载项目成员列表 */
+async function loadProjectMemberList(projectId: string) {
+  memberDialogLoading.value = true
+  try {
+    // 后端已返回用户信息，无需再查询
+    activeProjectMembers.value = await getProjectMembers(projectId)
+  } catch (e) {
+    console.error('加载项目成员失败:', e)
+    activeProjectMembers.value = []
+  } finally {
+    memberDialogLoading.value = false
+  }
+}
+
+/** 搜索系统用户 */
+async function searchSystemUsers(query: string) {
+  if (!query) { searchUserResults.value = []; return }
+  try {
+    const users = await searchUsers(query)
+    searchUserResults.value = users
+  } catch {
+    searchUserResults.value = []
+  }
+}
+
+/** 监听选中的用户ID变化，更新选中用户信息 */
+watch(() => addMemberForm.value.userId, (userId) => {
+  if (!userId) {
+    selectedAddUser.value = null
+    return
+  }
+  // 从搜索结果中找
+  const found = searchUserResults.value.find((u: any) => u.userId === userId)
+  if (found) {
+    selectedAddUser.value = found
+  } else {
+    selectedAddUser.value = null
+  }
+})
+
+/** 打开添加成员表单 */
+function openAddMember() {
+  addMemberForm.value = { userId: '', type: 'PARTICIPANT', permission: 'r' }
+  selectedAddUser.value = null
+  searchUserResults.value = []
+  showAddMemberForm.value = true
+}
+
+function cancelAddMember() {
+  showAddMemberForm.value = false
+  selectedAddUser.value = null
+  searchUserResults.value = []
+}
+
+/** 重置用户表单 */
+function resetUserForm() {
+  userForm.value = { account: '', password: '', userName: '', role: 'PARTICIPANT' }
+}
+
+/** 提交新建用户 */
+async function submitCreateUser() {
+  if (!userForm.value.account.trim() || !userForm.value.password.trim()) return
+  try {
+    await registerApi({
+      account: userForm.value.account.trim(),
+      password: userForm.value.password,
+      userName: userForm.value.userName.trim() || undefined
+    })
+    ElMessage.success('用户创建成功')
+    showCreateUserDialog.value = false
+    // 如果当前团队存在，自动将新用户加入团队
+    if (currentTeamId.value) {
+      try {
+        await addTeamMember(currentTeamId.value, {
+          userId: userForm.value.account, // 注册时 account 作为 userId
+          type: userForm.value.role as 'OWNER' | 'PARTICIPANT'
+        })
+        ElMessage.success(`已自动加入团队（${userForm.value.role === 'OWNER' ? '管理员' : '成员'}）`)
+        await loadTeamMembersList()
+      } catch (e: any) {
+        console.warn('自动加入团队失败，可手动添加:', e)
+      }
+    }
+    resetUserForm()
+  } catch (e: any) {
+    ElMessage.error(e.message || '创建失败')
+  }
+}
+
+/** 提交添加成员 */
+async function submitAddMember() {
+  if (!addMemberForm.value.userId.trim()) {
+    ElMessage.warning('请输入用户ID')
+    return
+  }
+  try {
+    if (activeProject.value) {
+      // 项目成员模式
+      await addProjectMember(activeProject.value.projectId, {
+        userId: addMemberForm.value.userId,
+        type: addMemberForm.value.type as 'OWNER' | 'PARTICIPANT',
+        permission: addMemberForm.value.permission as 'r' | 'rw'
+      })
+      await loadProjectMemberList(activeProject.value.projectId)
+    } else {
+      // 团队成员模式
+      await addTeamMember(currentTeamId.value, {
+        userId: addMemberForm.value.userId,
+        type: addMemberForm.value.type as 'OWNER' | 'PARTICIPANT'
+      })
+      await loadTeamMembersList()
+    }
+    ElMessage.success('成员添加成功')
+    showAddMemberForm.value = false
+  } catch (e: any) {
+    ElMessage.error(e.message || '添加失败')
+  }
+}
+
+/** 删除项目成员 */
+async function handleRemoveMember(row: any) {
+  if (!activeProject.value) return
+  try {
+    await removeProjectMember(activeProject.value.projectId, row.userId)
+    ElMessage.success('已移除')
+    await loadProjectMemberList(activeProject.value.projectId)
+  } catch (e: any) {
+    ElMessage.error(e.message || '删除失败')
+  }
+}
+
+/** 保存项目编辑 */
+async function saveEditProject() {
+  if (!editProjectForm.value.name.trim()) return
+  try {
+    await updateProjectApi(editProjectForm.value.id, {
+      projectName: editProjectForm.value.name,
+      projectDesc: editProjectForm.value.desc
+    })
+    ElMessage.success('修改成功')
+    showEditProjectDialog.value = false
+    // 更新本地数据
+    const idx = projects.value.findIndex(p => p.projectId === editProjectForm.value.id)
+    if (idx > -1) {
+      projects.value[idx].projectName = editProjectForm.value.name
+      projects.value[idx].projectDesc = editProjectForm.value.desc
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || '保存失败')
+  }
+}
+
+// 创建团队
+async function createTeam() {
+  if (!newTeamForm.value.teamName.trim()) return
+  try {
+    const team = await createTeamApi({
+      teamName: newTeamForm.value.teamName.trim(),
+      teamDesc: newTeamForm.value.teamDesc
+    })
+    ElMessage.success('团队创建成功')
+    showCreateTeamDialog.value = false
+    newTeamForm.value = { teamName: '', teamDesc: '' }
+    allTeams.value.push(team)
+    currentTeamId.value = team.teamId
+    appStore.setCurrentTeam(team.teamId)
+    // 加载新团队的详细数据
+    await loadTeamData(team.teamId)
+  } catch (e: any) {
+    ElMessage.error(e.message || '创建失败')
+  }
+}
+
+// 创建项目
+async function createProject() {
+  if (!newProject.value.projectName.trim()) return
+  try {
+    const p = await createProjectApi({
+      projectName: newProject.value.projectName.trim(),
+      projectDesc: newProject.value.projectDesc,
+      teamId: currentTeamId.value
+    })
+    ElMessage.success('创建成功')
+    showCreateProjectDialog.value = false
+    newProject.value = { projectName: '', projectDesc: '' }
+    // 重新加载项目列表以获取完整的 ProjectVO 数据
+    await loadTeamData(currentTeamId.value)
+    // 跳转到新创建的项目
+    appStore.setCurrentProject(p.projectId)
+    appStore.setProjectName(p.projectName)
+    router.push(`/workspace/${p.projectId}`)
+  } catch (e: any) {
+    ElMessage.error(e.message || '创建失败')
+  }
+}
+
+function formatDate(date: string | undefined): string {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/')
+}
+</script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+}
+</style>

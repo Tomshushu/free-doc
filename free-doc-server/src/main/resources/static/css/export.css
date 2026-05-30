@@ -1,0 +1,291 @@
+/* FreeDoc 导出样式 */
+
+/* 基础样式 */
+body {
+    font-family: 'SimSun', 'Microsoft YaHei', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+}
+
+/* 标题样式 */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    color: #2c3e50;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #bdc3c7;
+    padding-bottom: 0.2em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5, h6 {
+    font-size: 1em;
+}
+
+/* 段落样式 */
+p {
+    margin: 1em 0;
+    text-align: justify;
+}
+
+/* 链接样式 */
+a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* 列表样式 */
+ul, ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+li {
+    margin: 0.5em 0;
+}
+
+/* 代码样式 */
+code {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 3px;
+    padding: 0.2em 0.4em;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #e74c3c;
+}
+
+pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 1em;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+}
+
+/* 引用样式 */
+blockquote {
+    border-left: 4px solid #3498db;
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    background-color: #f8f9fa;
+    color: #555;
+    font-style: italic;
+}
+
+/* 表格样式 */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.9em;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* 分隔线样式 */
+hr {
+    border: none;
+    border-top: 1px solid #bdc3c7;
+    margin: 2em 0;
+}
+
+/* 图片样式 */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 强调样式 */
+strong, b {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+em, i {
+    font-style: italic;
+    color: #7f8c8d;
+}
+
+/* 删除线样式 */
+del, s {
+    text-decoration: line-through;
+    color: #95a5a6;
+}
+
+/* 任务列表样式 */
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item input[type="checkbox"] {
+    margin-right: 0.5em;
+}
+
+/* 语法高亮样式 */
+.hljs {
+    background: #f8f9fa !important;
+    color: #333 !important;
+}
+
+.hljs-comment,
+.hljs-quote {
+    color: #998;
+    font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+    color: #333;
+    font-weight: bold;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+    color: #008080;
+}
+
+.hljs-string,
+.hljs-doctag {
+    color: #d14;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+    color: #900;
+    font-weight: bold;
+}
+
+.hljs-subst {
+    font-weight: normal;
+}
+
+.hljs-type,
+.hljs-class .hljs-title {
+    color: #458;
+    font-weight: bold;
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-attribute {
+    color: #000080;
+    font-weight: normal;
+}
+
+.hljs-regexp,
+.hljs-link {
+    color: #009926;
+}
+
+.hljs-symbol,
+.hljs-bullet {
+    color: #990073;
+}
+
+.hljs-built_in,
+.hljs-builtin-name {
+    color: #0086b3;
+}
+
+.hljs-meta {
+    color: #999;
+    font-weight: bold;
+}
+
+.hljs-deletion {
+    background: #fdd;
+}
+
+.hljs-addition {
+    background: #dfd;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: bold;
+}
+
+/* 打印样式 */
+@media print {
+    body {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+    }
+    
+    pre, blockquote {
+        page-break-inside: avoid;
+    }
+    
+    img {
+        page-break-inside: avoid;
+    }
+    
+    table {
+        page-break-inside: avoid;
+    }
+}
