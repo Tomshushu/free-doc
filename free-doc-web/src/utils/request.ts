@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { clearAuth, getToken } from './auth'
 import router from '@/router'
+import { useI18n } from 'vue-i18n'
 import type { ApiResponse } from '@/types'
 
 let isRedirectingToLogin = false
@@ -28,31 +29,66 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+function getI18nMessage(key: string, fallback: string): string {
+  try {
+    const locale = localStorage.getItem('locale') || 'zh-CN'
+    const i18n = (window as any).__VUE_I18N_INSTANCE__
+    if (i18n && i18n.global) {
+      return i18n.global.t(key) || fallback
+    }
+    return fallback
+  } catch {
+    return fallback
+  }
+}
+
 instance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
-    // 对于 blob 类型的响应，直接返回
     if (response.config.responseType === 'blob') {
       return response
     }
-    
+
     const res = response.data
     if (res.code !== 200) {
-      ElMessage.error(res.message || '请求失败')
+      if (res.code === 4011 || res.code === 4012) {
+        handleAuthExpired(res.message, res.code === 4011)
+      } else {
+        ElMessage.error(res.message || '请求失败')
+      }
       return Promise.reject(new Error(res.message || '请求失败'))
     }
     return response
   },
   (error) => {
     const status = error.response?.status
+    const resData = error.response?.data
 
     if (status === 401 || status === 403) {
-      if (!isRedirectingToLogin) {
-        isRedirectingToLogin = true
-        ElMessage.error('登录已过期，请重新登录')
-      }
+      const isExpired = resData?.code === 4011
+      const message = resData?.message || (isExpired
+        ? getI18nMessage('common.sessionExpired', '登录已过期，请重新登录')
+        : getI18nMessage('common.tokenInvalid', '认证失败，请重新登录'))
+      handleAuthExpired(message, isExpired)
+    } else {
+      ElMessage.error(error.response?.data?.message || '网络错误')
+    }
 
-      clearAuth()
+    return Promise.reject(error)
+  }
+)
 
+function handleAuthExpired(message: string, isExpired: boolean) {
+  if (isRedirectingToLogin) return
+  isRedirectingToLogin = true
+
+  clearAuth()
+
+  const expiredMsg = message || getI18nMessage('common.sessionExpired', '登录已过期，请重新登录')
+
+  ElMessageBox.alert(expiredMsg, getI18nMessage('common.sessionExpiredTitle', '提示'), {
+    confirmButtonText: getI18nMessage('common.confirm', '确定'),
+    type: 'warning',
+    callback: () => {
       const currentFullPath = router.currentRoute.value.fullPath
       const redirect = currentFullPath && currentFullPath !== '/login' ? currentFullPath : undefined
 
@@ -62,13 +98,9 @@ instance.interceptors.response.use(
       }).finally(() => {
         isRedirectingToLogin = false
       })
-    } else {
-      ElMessage.error(error.response?.data?.message || '网络错误')
     }
-
-    return Promise.reject(error)
-  }
-)
+  })
+}
 
 export async function get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
   const response = await instance.get<ApiResponse<T>>(url, config)

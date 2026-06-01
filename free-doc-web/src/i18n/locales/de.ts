@@ -77,6 +77,9 @@ export default {
     version: 'Version',
     initial: 'Initial',
     currentUser: 'Aktuelle Version',
+    sessionExpiredTitle: 'Hinweis',
+    sessionExpired: 'Die Sitzung ist abgelaufen, bitte melden Sie sich erneut an',
+    tokenInvalid: 'Authentifizierung fehlgeschlagen, bitte melden Sie sich erneut an',
   },
   login: {
     subtitle: 'Team-Wissensmanagementsystem',

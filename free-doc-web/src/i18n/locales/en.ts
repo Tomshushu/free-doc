@@ -77,6 +77,9 @@ export default {
     version: 'Version',
     initial: 'Initial',
     currentUser: 'Current version',
+    sessionExpiredTitle: 'Notice',
+    sessionExpired: 'Login session has expired, please log in again',
+    tokenInvalid: 'Authentication failed, please log in again',
   },
   login: {
     subtitle: 'Team Knowledge Management System',

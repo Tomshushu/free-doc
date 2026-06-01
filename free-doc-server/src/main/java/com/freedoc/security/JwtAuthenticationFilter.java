@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freedoc.common.i18n.I18nUtil;
 import com.freedoc.common.result.R;
 import com.freedoc.common.util.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,14 +49,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
-                String acceptLanguage = request.getHeader("Accept-Language");
-                Locale locale = acceptLanguage != null && !acceptLanguage.isEmpty()
-                        ? Locale.forLanguageTag(acceptLanguage.replace("_", "-"))
-                        : Locale.ENGLISH;
-                response.setContentType("application/json;charset=UTF-8");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write(objectMapper.writeValueAsString(
-                        R.fail(401, I18nUtil.getMessage("error.auth.tokenInvalid", locale))));
+                sendAuthError(request, response, e);
+                return;
+            }
+        } else if (StringUtils.hasText(token)) {
+            try {
+                jwtUtil.parseToken(token);
+            } catch (ExpiredJwtException e) {
+                sendAuthError(request, response, e);
+                return;
+            } catch (Exception e) {
+                sendAuthError(request, response, e);
                 return;
             }
         }
@@ -69,6 +73,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    private void sendAuthError(HttpServletRequest request, HttpServletResponse response, Exception e) throws IOException {
+        String acceptLanguage = request.getHeader("Accept-Language");
+        Locale locale = acceptLanguage != null && !acceptLanguage.isEmpty()
+                ? Locale.forLanguageTag(acceptLanguage.replace("_", "-"))
+                : Locale.ENGLISH;
+
+        boolean expired = e instanceof ExpiredJwtException;
+        String messageKey = expired ? "error.auth.tokenExpired" : "error.auth.tokenInvalid";
+        int code = expired ? 4011 : 4012;
+
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write(objectMapper.writeValueAsString(
+                R.fail(code, I18nUtil.getMessage(messageKey, locale))));
     }
 
 }

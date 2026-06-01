@@ -77,6 +77,9 @@ export default {
     version: '版本',
     initial: '初始版',
     currentUser: '目前版本',
+    sessionExpiredTitle: '提示',
+    sessionExpired: '登入已過期，請重新登入',
+    tokenInvalid: '認證失敗，請重新登入',
   },
   login: {
     subtitle: '團隊知識庫管理系統',

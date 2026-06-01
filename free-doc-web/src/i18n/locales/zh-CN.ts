@@ -77,6 +77,9 @@ export default {
     version: '版本',
     initial: '初始版',
     currentUser: '当前版本',
+    sessionExpiredTitle: '提示',
+    sessionExpired: '登录已过期，请重新登录',
+    tokenInvalid: '认证失败，请重新登录',
   },
   login: {
     subtitle: '团队知识库管理系统',

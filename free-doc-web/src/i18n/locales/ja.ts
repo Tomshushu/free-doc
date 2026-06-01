@@ -77,6 +77,9 @@ export default {
     version: 'バージョン',
     initial: '初期版',
     currentUser: '現在のバージョン',
+    sessionExpiredTitle: 'お知らせ',
+    sessionExpired: 'ログインセッションが期限切れです。再度ログインしてください',
+    tokenInvalid: '認証に失敗しました。再度ログインしてください',
   },
   login: {
     subtitle: 'チームナレッジ管理システム',
